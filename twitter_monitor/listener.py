@@ -1,13 +1,13 @@
 import json
 import logging
 
-from tweepy.streaming import StreamListener
+from tweepy.streaming import StreamingClient
 
 
 logger = logging.getLogger(__name__)
 
 
-class JsonStreamListener(StreamListener):
+class JsonStreamListener(StreamingClient):
     """
     This extends the Tweepy StreamListener to avoid
     closing the streaming connection when certain bad events occur.

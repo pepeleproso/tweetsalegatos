@@ -5,6 +5,12 @@ import tweepy
 
 logger = logging.getLogger(__name__)
 
+class TweetPrinterV2(tweepy.StreamingClient):
+    
+    def on_tweet(self, tweet):
+        print(f"{tweet.id} {tweet.created_at} ({tweet.author_id}): {tweet.text}")
+        print("-"*50)
+
 
 class DynamicTwitterStream(object):
     """
@@ -18,8 +24,8 @@ class DynamicTwitterStream(object):
     # Number of seconds to wait for the stream to stop
     STOP_TIMEOUT = 1
 
-    def __init__(self, auth, listener, term_checker, **options):
-        self.auth = auth
+    def __init__(self, twitter_bearer_token, listener, term_checker, **options):
+        self.twitter_bearer_token = twitter_bearer_token
         self.listener = listener
         self.term_checker = term_checker
 
@@ -104,10 +110,7 @@ class DynamicTwitterStream(object):
 
         if len(tracking_terms) > 0 or self.unfiltered:
             # we have terms to track, so build a new stream
-            self.stream = tweepy.Stream(self.auth, self.listener,
-                                        stall_warnings=True,
-                                        timeout=90,
-                                        retry_count=self.retry_count)
+            self.stream = TweetPrinterV2(bearer_token=self.twitter_bearer_token)#), self.listener)
 
             if len(tracking_terms) > 0:
                 logger.info("Starting new twitter stream with %s terms:", len(tracking_terms))

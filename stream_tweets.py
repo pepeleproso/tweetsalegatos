@@ -1,4 +1,3 @@
-#!/bin/env python
 """
 Uses twitter_monitor.basic_stream to stream
 filtered tweets to stdout.
@@ -55,7 +54,7 @@ If this is not provided, the file 'twitter_monitor.ini'
 will be used in the current working directory (if it exists).
 """
 
-import ConfigParser
+import configparser
 import os
 import logging
 import argparse
@@ -97,27 +96,11 @@ def _configure_logger():
             }
         })
 
-def _get_ini_file(ini_path):
-    logger.info("Reading configuration from %s", ini_path)
-
-    import cStringIO as StringIO
-    import os
-
-    config = StringIO.StringIO()
-    config.write('[root]\n')
-
-    with open(ini_path) as ini:
-        config.write(ini.read())
-
-    config.seek(0, os.SEEK_SET)
-    return config
-
-
 class ArgParser(object):
     def __init__(self):
 
         self.parser = argparse.ArgumentParser(description='Stream filtered tweets to stdout.')
-        self.config = ConfigParser.SafeConfigParser()
+        self.config = configparser.SafeConfigParser()
         self.env = os.environ
         self.options = []
 
@@ -135,9 +118,6 @@ class ArgParser(object):
 
         args = self.parser.parse_args()
 
-        if os.path.isfile(args.ini_file):
-            self.config.readfp(_get_ini_file(args.ini_file))
-
         values = dict()
         for arg_name, env_name, ini_name, default, dest, required in self.options:
             # Try the command line
@@ -151,7 +131,7 @@ class ArgParser(object):
                     logger.debug("Checking config file for %s", ini_name)
                     value = self.config.get(CONFIG_SECTION_NAME, ini_name)
                     logger.debug("Value is now %s", value)
-                except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+                except (configparser.NoOptionError, configparser.NoSectionError):
 
                     # Try the environment
                     logger.debug("Checking environment for %s", env_name)
@@ -184,18 +164,8 @@ def _read_args():
                       default='15',
                       help='how often to reload the track file')
 
-    parser.add_option('api_key', '--api-key', 'api_key', 'TWITTER_API_KEY',
-                      help='your Twitter API key',
-                      required=True)
-    parser.add_option('api_secret', '--api-secret', 'api_secret', 'TWITTER_API_SECRET',
-                      help='your Twitter API secret',
-                      required=True)
-    parser.add_option('access_token', '--access-token', 'access_token', 'TWITTER_ACCESS_TOKEN',
-                      help='your Twitter API access token',
-                      required=True)
-    parser.add_option('access_token_secret', '--access-token-secret', 'access_token_secret',
-                      'TWITTER_ACCESS_TOKEN_SECRET',
-                      help='your Twitter API access token secret',
+    parser.add_option('bearer_token', '--bearer-token', 'bearer_token', 'BEARER_TOKEN',
+                      help='your Twitter Bearer Token',
                       required=True)
     parser.add_option('unfiltered', '--unfiltered', 'unfiltered', 'TWITTER_UNFILTERED',
                       help="allow unfiltered streaming", 
@@ -224,10 +194,7 @@ if __name__ == '__main__':
         args.languages = args.languages.split(',')
 
     basic_stream.start(track_file=args.track_file,
-                       twitter_api_key=args.api_key,
-                       twitter_api_secret=args.api_secret,
-                       twitter_access_token=args.access_token,
-                       twitter_access_token_secret=args.access_token_secret,
+                       twitter_bearer_token=args.bearer_token,
                        poll_interval=args.poll_interval,
                        unfiltered=args.unfiltered,
                        debug=args.debug,

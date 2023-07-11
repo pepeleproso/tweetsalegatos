@@ -124,16 +124,6 @@ def set_terminate_listeners(stream):
     signal.signal(signal.SIGTERM, stop)
 
 
-def get_tweepy_auth(twitter_api_key,
-                    twitter_api_secret,
-                    twitter_access_token,
-                    twitter_access_token_secret):
-    """Make a tweepy auth object"""
-    auth = tweepy.OAuthHandler(twitter_api_key, twitter_api_secret)
-    auth.set_access_token(twitter_access_token, twitter_access_token_secret)
-    return auth
-
-
 def construct_listener(outfile=None):
     """Create the listener that prints tweets"""
     if outfile is not None:
@@ -159,10 +149,7 @@ def begin_stream_loop(stream, poll_interval):
 
 
 def start(track_file,
-          twitter_api_key,
-          twitter_api_secret,
-          twitter_access_token,
-          twitter_access_token_secret,
+          twitter_bearer_token,
           poll_interval=15,
           unfiltered=False,
           languages=None,
@@ -172,12 +159,7 @@ def start(track_file,
     listener = construct_listener(outfile)
     checker = BasicFileTermChecker(track_file, listener)
 
-    auth = get_tweepy_auth(twitter_api_key,
-                           twitter_api_secret,
-                           twitter_access_token,
-                           twitter_access_token_secret)
-
-    stream = DynamicTwitterStream(auth, listener, checker, unfiltered=unfiltered, languages=languages)
+    stream = DynamicTwitterStream(twitter_bearer_token, listener, checker, unfiltered=unfiltered, languages=languages)
 
     set_terminate_listeners(stream)
     if debug:
